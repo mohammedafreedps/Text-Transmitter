@@ -15,6 +15,7 @@ class HomwScreenAndroid extends StatelessWidget {
           child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          context.watch<ClientProvider>().isLoading ? const CircularProgressIndicator(color: Colors.black87,) :
           context.watch<ClientProvider>().isConnectedToServer
               ? AppButton(
                   lable: 'Disconnect',
@@ -30,6 +31,8 @@ class HomwScreenAndroid extends StatelessWidget {
                     context.read<ClientProvider>().onConnectToServer();
                   },
                 ),
+          context.watch<ClientProvider>().isConnectedToServer ? Text('Server Connected') : SizedBox(),
+          SizedBox(height: 40,),
           context.watch<ClientProvider>().recivedText.isNotEmpty
               ? SelectableText(context.watch<ClientProvider>().recivedText)
               : const SizedBox()

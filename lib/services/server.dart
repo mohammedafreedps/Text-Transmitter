@@ -1,34 +1,42 @@
 import 'dart:io';
+import 'package:texttransmitter/KEY.dart';
+import 'package:texttransmitter/services/copy_to_clipboard.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class ServerManager {
   static HttpServer? server;
-  static late WebSocketChannel channel;
+  static WebSocketChannel? channel;
   static WebSocket? socket;
-  static String serverIP = '192.168.1.11';
 
   static Future<void> startServer(
-      {required Function({int? port, required bool serverStatus})
-          onServerStart,
-      required Function({required bool clientConnected}) onClientConnected}) async {
+      {required Function({int? port, required bool serverStatus}) onServerStart,
+      required Function({required bool clientConnected}) onClientConnected,
+      required Function({required String message}) onMessageRecived,
+      required Function({required bool clientConnected})
+          onClientDisconnected}) async {
     try {
+      print('printing testing');
       server = await HttpServer.bind(InternetAddress.anyIPv4, 8080);
-      print(
-          'Server running at ws://${server!.address.address}:${server!.port}');
       onServerStart(serverStatus: true, port: server?.port);
-      server!.listen((HttpRequest request) async {
+      server!.listen(
+        onError: (Object error, StackTrace stackTrace){
+          print('Error at line 22 server manager');
+        },
+        onDone: () {
+          print('on done is called 25');
+      },(HttpRequest request) async {
         if (request.uri.path == '/ws') {
           socket = await WebSocketTransformer.upgrade(request);
-          print('Client connected');
           onClientConnected(clientConnected: true);
           socket?.listen((data) {
-            print('Received from client: $data');
-            socket?.add('Echo: $data'); // Echo message back to client
+            onMessageRecived(message: data);
+            copyToClipboard(data);
+          },onDone: (){
+            onClientDisconnected(clientConnected: true);
           });
         } else {
           request.response.statusCode = HttpStatus.forbidden;
           request.response.close();
-          print('Else workded');
         }
       });
     } catch (e) {
@@ -36,9 +44,11 @@ class ServerManager {
     }
   }
 
-  static Future<void> stopServer({required Function({required bool isServerStopped})onServerStopped}) async {
+  static Future<void> stopServer(
+      {required Function({required bool isServerStopped})
+          onServerStopped}) async {
     try {
-      if(socket != null && socket?.readyState == WebSocket.open){
+      if (socket != null && socket?.readyState == WebSocket.open) {
         socket?.close();
       }
       await server?.close(force: true);
@@ -48,43 +58,44 @@ class ServerManager {
     }
   }
 
-  static void connectServer({required Function({required String message}) onMessageRecive,required Function(bool status) onConnected}) {
+  static Future<void> connectServer(
+      {required Function({required String message}) onMessageRecive,
+      required Function(bool status) onConnected}) async {
     try {
-      channel = WebSocketChannel.connect(Uri.parse('ws://$serverIP:8080/ws'));
+      channel = WebSocketChannel.connect(Uri.parse('ws://$ip_address:8080/ws'));
+      await channel?.ready;
       onConnected(true);
-      channel.stream.listen((message) {
-        print(message);
+      channel?.stream.listen((message) {
         onMessageRecive(message: message);
+        copyToClipboard(message);
       }, onError: (error) {
-        print(error);
+        onConnected(false);
       }, onDone: () {
-        print('WebSocket connection closed.');
+        print('client side');
+        onConnected(false);
       });
     } catch (e) {
       throw e;
     }
   }
 
-  static void disconnectClient({required Function({required bool status}) onDisconnected}) async {
-  try {
-    if (channel != null) {
-      await channel.sink.close();
-      onDisconnected(status: true);
-      print('Client disconnected from the server.');
-    } else {
-      print('No active WebSocket connection to close.');
-    }
-  } catch (e) {
-    print('Error while disconnecting client: $e');
+  static void disconnectClient(
+      {required Function({required bool status}) onDisconnected}) async {
+    try {
+      if (channel != null) {
+        await channel?.sink.close();
+        onDisconnected(status: true);
+      } else {
+        print('error at line 81');
+      }
+    } catch (e) {}
   }
-}
-
 
   static void sentFromPc(String text) {
     socket?.add(text);
   }
 
-  static void sentFromMobile() {
-    channel.sink.add('Hellow I am from mobile');
+  static void sentFromMobile(String text) {
+    channel?.sink.add(text);
   }
 }

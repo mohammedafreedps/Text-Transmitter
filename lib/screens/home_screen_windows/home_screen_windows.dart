@@ -32,15 +32,19 @@ class HomeScreenWindows extends StatelessWidget {
                       context.read<ServerProvider>().toStartServer();
                     },
                   ),
+            context.watch<ServerProvider>().isServerStarted ? Text('IP: ${context.watch<ServerProvider>().IPv4Address}') : Text('IP: ---.--.--'),
             context.watch<ServerProvider>().openedPortNumber != 0
                 ? Text(
                     'Port: ${context.watch<ServerProvider>().openedPortNumber.toString()}')
-                : const SizedBox(),
+                : const Text('Port: ----'),
 
                 context.watch<ServerProvider>().isClientConnected
-                ? Text(
+                ? const Text(
                     'Client : Connected')
-                : Text('Client : Not Connected')
+                : const Text('Client : Not Connected'),
+
+            SizedBox(height: 40,),
+            context.watch<ServerProvider>().recivedText.isNotEmpty ? Text(context.watch<ServerProvider>().recivedText) : const SizedBox()
           ],
         ),
       ),

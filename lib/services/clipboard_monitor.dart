@@ -19,13 +19,11 @@ class ClipBoardMonitor with ClipboardListener {
   @override
   void onClipboardChanged() async {
     ClipboardData? newClipboardData = await Clipboard.getData(Clipboard.kTextPlain);
-    
     if(Platform.isWindows){
       ServerManager.sentFromPc(newClipboardData?.text ?? '');
     }
     if(Platform.isAndroid){
-      print('from android');
-      print(newClipboardData?.text);
+      ServerManager.sentFromMobile(newClipboardData?.text ?? '');
     }
   }
 }

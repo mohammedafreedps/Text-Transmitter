@@ -37,6 +37,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ClientProvider()),
       ],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         home: Platform.isWindows ? HomeScreenWindows() : HomwScreenAndroid(),
       ),
     );
