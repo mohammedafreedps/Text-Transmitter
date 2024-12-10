@@ -13,39 +13,42 @@ class HomeScreenWindows extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            context.watch<ServerProvider>().isServerStarted
-                ? AppButton(
-                    lable: 'Stop Server',
-                    backgroundColor: Colors.red,
-                    onClick: () {
-                      context.read<ServerProvider>().toStopServer();
-                    },
-                  )
-                : AppButton(
-                    lable: 'Start Server',
-                    backgroundColor: Colors.green,
-                    onClick: () {
-                      context.read<ServerProvider>().toStartServer();
-                    },
-                  ),
-            context.watch<ServerProvider>().isServerStarted ? Text('IP: ${context.watch<ServerProvider>().IPv4Address}') : Text('IP: ---.--.--'),
-            context.watch<ServerProvider>().openedPortNumber != 0
-                ? Text(
-                    'Port: ${context.watch<ServerProvider>().openedPortNumber.toString()}')
-                : const Text('Port: ----'),
-
-                context.watch<ServerProvider>().isClientConnected
-                ? const Text(
-                    'Client : Connected')
-                : const Text('Client : Not Connected'),
-
-            SizedBox(height: 40,),
-            context.watch<ServerProvider>().recivedText.isNotEmpty ? Text(context.watch<ServerProvider>().recivedText) : const SizedBox()
-          ],
+      body: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              context.watch<ServerProvider>().isServerStarted
+                  ? AppButton(
+                      lable: 'Stop Server',
+                      backgroundColor: Colors.red,
+                      onClick: () {
+                        context.read<ServerProvider>().toStopServer();
+                      },
+                    )
+                  : AppButton(
+                      lable: 'Start Server',
+                      backgroundColor: Colors.green,
+                      onClick: () {
+                        context.read<ServerProvider>().toStartServer();
+                      },
+                    ),
+              context.watch<ServerProvider>().isServerStarted ? Text('IP: ${context.watch<ServerProvider>().IPv4Address}') : Text('IP: ---.--.--'),
+              context.watch<ServerProvider>().openedPortNumber != 0
+                  ? Text(
+                      'Port: ${context.watch<ServerProvider>().openedPortNumber.toString()}')
+                  : const Text('Port: ----'),
+        
+                  context.watch<ServerProvider>().isClientConnected
+                  ? const Text(
+                      'Client : Connected')
+                  : const Text('Client : Not Connected'),
+        
+              SizedBox(height: 40,),
+              context.watch<ServerProvider>().recivedText.isNotEmpty ? Text(context.watch<ServerProvider>().recivedText) : const SizedBox()
+            ],
+          ),
         ),
       ),
     );

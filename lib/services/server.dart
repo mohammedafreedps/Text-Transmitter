@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:texttransmitter/KEY.dart';
 import 'package:texttransmitter/services/copy_to_clipboard.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -15,15 +16,12 @@ class ServerManager {
       required Function({required bool clientConnected})
           onClientDisconnected}) async {
     try {
-      print('printing testing');
       server = await HttpServer.bind(InternetAddress.anyIPv4, 8080);
       onServerStart(serverStatus: true, port: server?.port);
       server!.listen(
         onError: (Object error, StackTrace stackTrace){
-          print('Error at line 22 server manager');
         },
         onDone: () {
-          print('on done is called 25');
       },(HttpRequest request) async {
         if (request.uri.path == '/ws') {
           socket = await WebSocketTransformer.upgrade(request);
@@ -59,10 +57,10 @@ class ServerManager {
   }
 
   static Future<void> connectServer(
-      {required Function({required String message}) onMessageRecive,
-      required Function(bool status) onConnected}) async {
+      {required String IPAddress,required Function({required String message}) onMessageRecive,
+      required Function(bool status) onConnected,required Function({required String errorMessage})onError}) async {
     try {
-      channel = WebSocketChannel.connect(Uri.parse('ws://$ip_address:8080/ws'));
+      channel = WebSocketChannel.connect(Uri.parse('ws://$IPAddress:8080/ws'));
       await channel?.ready;
       onConnected(true);
       channel?.stream.listen((message) {
@@ -71,11 +69,10 @@ class ServerManager {
       }, onError: (error) {
         onConnected(false);
       }, onDone: () {
-        print('client side');
         onConnected(false);
       });
     } catch (e) {
-      throw e;
+      onError(errorMessage: e.toString());
     }
   }
 
@@ -86,9 +83,10 @@ class ServerManager {
         await channel?.sink.close();
         onDisconnected(status: true);
       } else {
-        print('error at line 81');
       }
-    } catch (e) {}
+    } catch (e) {
+      throw e;
+    }
   }
 
   static void sentFromPc(String text) {

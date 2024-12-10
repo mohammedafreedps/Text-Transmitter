@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:clipboard_watcher/clipboard_watcher.dart';
 import 'package:flutter/services.dart';
 import 'package:texttransmitter/services/server.dart';
@@ -18,12 +17,17 @@ class ClipBoardMonitor with ClipboardListener {
 
   @override
   void onClipboardChanged() async {
-    ClipboardData? newClipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+    try {
+      ClipboardData? newClipboardData = await Clipboard.getData(Clipboard.kTextPlain);
     if(Platform.isWindows){
       ServerManager.sentFromPc(newClipboardData?.text ?? '');
     }
     if(Platform.isAndroid){
       ServerManager.sentFromMobile(newClipboardData?.text ?? '');
     }
+    } catch (e) {
+      print(e);
+    }
+    
   }
 }
